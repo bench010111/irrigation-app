@@ -1,0 +1,244 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* ===== 컨테이너 설정 ===== */
+  .container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  /* ===== 좌측 패널 (제어) ===== */
+  .left-panel {
+    width: 35%;
+    padding: 20px;
+    background-color: #f5f5f5;
+    overflow-y: auto;
+  }
+  
+  /* ===== 우측 패널 (지도 + CCTV + 로그) ===== */
+  .right-panel {
+    width: 65%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+  }
+  
+  /* ===== 밸브 UI ===== */
+  .valves-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .valve-box {
+    flex: 1;
+    min-width: 180px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    margin-bottom: 10px;
+  }
+  
+  .valve-box h4 {
+    margin-top: 0;
+  }
+  
+  .valve-subblock {
+    border-top: 1px dashed #ccc;
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+  
+  .valve-toggle {
+    padding: 5px 10px;
+    font-size: 14px;
+  }
+  
+  .valve-block:hover {
+    cursor: pointer;
+    background-color: #e0f7fa;
+  }
+  
+  /* ===== 예약 설정 UI ===== */
+  .schedule label {
+    display: block;
+    margin: 5px 0;
+    font-size: 14px;
+  }
+  
+  .schedule-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 10px;
+  }
+  
+  .time-group {
+    display: flex;
+    flex-wrap: wrap; /* 요소가 넘칠 경우 다음 줄로 */
+    gap: 10px;
+  }
+  
+  .time-group label {
+    font-size: 14px;
+  }
+  
+  .repeat-clear-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 15px;
+  }
+  
+  .repeat-group {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+  }
+  
+  /* 버튼 및 입력 필드 */
+  button,
+  input[type="time"],
+  input[type="checkbox"],
+  select {
+    padding: 4px;
+    font-size: 14px;
+  }
+  
+  .clear-schedule-btn,
+  .clear-reservation {
+    padding: 5px 10px;
+    font-size: 13px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .clear-reservation {
+    background-color: #e57373;
+    color: white;
+  }
+  
+  .time-group input[type="time"],
+  .time-group select {
+    width: 100px; /* 더 좁게 조정하여 내부에 잘 맞게 */
+    font-size: 13px;
+    box-sizing: border-box;
+  }
+  
+  .time-group select option {
+    /* 15분 단위 옵션 설정 */
+    background-color: #f9f9f9;
+  }
+  
+  /* ===== 지도 및 CCTV ===== */
+  .map-cctv-wrapper {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    height: 60%;
+  }
+  
+  .map-container,
+  .cctv-container {
+    flex: 1;
+    max-width: 50%;
+  }
+  
+  .map-wrapper,
+  .map-overlay-wrapper {
+    position: relative;
+    width: 100%;
+    height: auto;
+  }
+  
+  .map-img,
+  .base-map,
+  .base-layer,
+  .overlay-layer {
+    width: 100%;
+    max-height: 450px;
+    object-fit: contain;
+  }
+  
+  .base-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+  }
+  
+  .overlay-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 50;  /* between 1 and 99 */
+    pointer-events: none;
+  }  
+  
+  .cctv-placeholder {
+    width: 100%;
+    height: 250px;
+    background-color: #f0f0f0;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #777;
+    font-size: 16px;
+  }
+  
+  /* ===== 시스템 로그 ===== */
+  .log-section {
+    margin-top: 20px;
+    background-color: #fafafa;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    height: 30%;
+    overflow-y: auto;
+  }
+  
+  /* ===== 예약 UI 최적화 ===== */
+  .time-group input[type="time"],
+  .time-group select {
+    width: 120px; /* 입력 필드 너비 고정 */
+  }
+  
+  .repeat-clear-row {
+    display: flex;
+    align-items: center;
+    gap: 70px;             /* 요소 간 간격 */
+    justify-content: flex-start; /* 왼쪽 정렬 */
+    margin-top: 10px;
+  }
+  
+  .repeat-clear-row label {
+    margin-right: 10px;
+    font-size: 14px;
+  }
+  
+  .clear-schedule-btn {
+    padding: 5px 10px;
+    font-size: 13px;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #b0bec5;
+    color: white;
+  }
+  
+  .clear-reservation {
+    background-color: transparent;
+    color: inherit;
+    border: 1px solid #ccc;
+  }
+  

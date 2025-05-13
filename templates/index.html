@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>관수제어 시스템 💦</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+  <div class="container">
+    <div class="left-panel">
+      <h2>북구청 도시숲 관수제어 ⚙️</h2>
+      {% for i in range(1, 6) %}
+      <div class="valve-block" id="valve-{{ i }}" data-valve="{{ i }}">
+        <h3>관수#{{ i }}</h3>
+        <div class="valves-row">
+          {% for j in range(1, 3) %}
+          <div class="valve-box">
+            <h4>밸브 {{ j }}</h4>
+            <div class="manual-control-row">
+              <span class="manual-control-label">수동 제어:</span>
+              <button class="valve-toggle" onclick="toggleValve('{{ i }}', '{{ j }}', 'on')" data-valve="{{ i }}-{{ j }}" data-state="on">ON</button>
+              <button class="valve-toggle" onclick="toggleValve('{{ i }}', '{{ j }}', 'off')" data-valve="{{ i }}-{{ j }}" data-state="off">OFF</button>
+              <span id="status-{{ i }}-{{ j }}"></span>
+            </div>
+            <div class="schedule">
+              <div class="schedule-row">
+                <div class="time-group">
+                  <label for="start-time-{{ i }}-{{ j }}">시작시간</label>
+                  <input type="time" id="start-time-{{ i }}-{{ j }}" name="start-time-{{ i }}-{{ j }}">
+                </div>
+                <div class="time-group">
+                  <label for="runtime-{{ i }}-{{ j }}">작동시간</label>
+                  <select id="runtime-{{ i }}-{{ j }}" name="runtime-{{ i }}-{{ j }}">
+                    <option value="15">15분</option>
+                    <option value="30">30분</option>
+                    <option value="45">45분</option>
+                    <option value="60">60분</option>
+                  </select>
+                </div>                
+              </div>
+              <div class="repeat-clear-row">
+                <div class="repeat-group">
+                  <label for="repeat-daily-{{ i }}-{{ j }}">매일 반복</label>
+                  <input type="checkbox" id="repeat-daily-{{ i }}-{{ j }}" name="repeat-daily-{{ i }}-{{ j }}">
+                </div>
+                <button class="clear-reservation" onclick="clearReservation('{{ i }}', '{{ j }}')">예약 초기화</button>
+              </div>
+            </div>                                                 
+            <div class="runtime">
+              <p>누적 작동 시간: <span id="runtime-{{ i }}-{{ j }}">0</span> 초</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}      
+    </div>
+    
+    <div class="right-panel">
+      <div class="map-cctv-wrapper">
+        <div class="map-container">
+          <h2>🗺️ 도시숲 지도</h2>
+          <div class="map-img-wrapper" style="position: relative;">
+            <!-- Base map layer -->
+            <img src="{{ url_for('static', filename='map_layer_1.png') }}" alt="지도" class="map-img base-layer" style="position:absolute; top:0; left:0; z-index:1;">
+            
+            <!-- Dynamic Highlight Layers for irrigation groups -->
+            <img id="map-overlay-2-1" src="{{ url_for('static', filename='map_layer_2_1.png') }}" alt="하이라이트 1" class="map-img overlay-layer" style="position:absolute; top:0; left:0; z-index:2; display:none; pointer-events:none;">
+            <img id="map-overlay-2-2" src="{{ url_for('static', filename='map_layer_2_2.png') }}" alt="하이라이트 2" class="map-img overlay-layer" style="position:absolute; top:0; left:0; z-index:2; display:none; pointer-events:none;">
+            <img id="map-overlay-2-3" src="{{ url_for('static', filename='map_layer_2_3.png') }}" alt="하이라이트 3" class="map-img overlay-layer" style="position:absolute; top:0; left:0; z-index:2; display:none; pointer-events:none;">
+            <img id="map-overlay-2-4" src="{{ url_for('static', filename='map_layer_2_4.png') }}" alt="하이라이트 4" class="map-img overlay-layer" style="position:absolute; top:0; left:0; z-index:2; display:none; pointer-events:none;">
+            <img id="map-overlay-2-5" src="{{ url_for('static', filename='map_layer_2_5.png') }}" alt="하이라이트 5" class="map-img overlay-layer" style="position:absolute; top:0; left:0; z-index:2; display:none; pointer-events:none;">
+            
+            <!-- Overlay map layer (always visible) -->
+            <img src="{{ url_for('static', filename='map_layer_99.png') }}" class="map-img overlay-layer overlay-layer-99" style="position:absolute; top:0; left:0; z-index:3;">
+
+          </div>                     
+        </div>
+        <div class="cctv-container">
+          <h2>📹 CCTV 모니터링</h2>
+          <div class="cctv-placeholder">CCTV 화면 자리</div>
+        </div>
+      </div>
+      
+      <div class="log-section">
+        <h2>🧾 시스템 로그</h2>
+        <p>로그가 여기에 표시됩니다...</p>
+      </div>
+    </div>
+  </div>  
+
+  <script>
+    // ✅ 밸브 수동 제어 (켜기/끄기 버튼)
+    $(".valve-toggle").on("click", function () {
+      const valve = $(this).data("valve");  // 관수번호-밸브번호 예: "1-1"
+      const state = $(this).data("state");  // on/off
+      const [irrigation, valveNum] = valve.split('-');
+
+      $.ajax({
+        type: "POST",
+        url: "/toggle-valve",
+        data: {
+          irrigation: irrigation,
+          valve: valveNum,
+          state: state
+        },
+        success: function (response) {
+          // 상태 업데이트
+          if (state === "on") {
+            $(`[data-valve="${irrigation}-${valveNum}"][data-state="on"]`).prop('disabled', true);
+            $(`[data-valve="${irrigation}-${valveNum}"][data-state="off"]`).prop('disabled', false);
+            $(`#status-${irrigation}-${valveNum}`).text("[켜짐]");
+          } else {
+            $(`[data-valve="${irrigation}-${valveNum}"][data-state="off"]`).prop('disabled', true);
+            $(`[data-valve="${irrigation}-${valveNum}"][data-state="on"]`).prop('disabled', false);
+            $(`#status-${irrigation}-${valveNum}`).text("[꺼짐]");
+          }
+
+          // 누적 시간 표시
+          if (response.runtime_seconds !== undefined) {
+            const totalSec = response.runtime_seconds;
+            const min = Math.floor(totalSec / 60);
+            const sec = totalSec % 60;
+            $(`#runtime-${irrigation}-${valveNum}`).text(`${min}분 ${sec}초`);
+          }
+        },
+        error: function () {
+          alert("오류가 발생했습니다.");
+        }
+      });
+    });
+
+    // ✅ 예약 시간 설정
+    $("input[type='time']").on("change", function () {
+      const timeType = $(this).attr("name").split("_")[0];
+      const [irrigation, valveNum] = $(this).attr("name").split("_").slice(1);
+      const value = $(this).val();
+
+      $.ajax({
+        type: "POST",
+        url: "/set-schedule",
+        data: {
+          irrigation: irrigation,
+          valve: valveNum,
+          timeType: timeType,
+          value: value
+        },
+        success: function (response) {
+          console.log(`예약 ${timeType} 시간 설정됨: ${value}`);
+        },
+        error: function () {
+          alert("오류가 발생했습니다.");
+        }
+      });
+    });
+    // ✅ 관수 번호에 따른 하이라이트 보이기/숨기기
+    $(".valve-block").hover(function() {
+      const valveId = $(this).data("valve");  // 관수번호 (예: 1, 2, 3, ...)
+
+      // map_layer_99는 항상 보이게 하고, 해당 관수번호에 맞는 map_layer_2_#만 보이게 하기
+      $(".overlay-layer").not(".overlay-layer-99").hide();  // map_layer_99는 숨기지 않음
+      $(`#map-overlay-2-${valveId}`).show();  // 해당 관수번호의 하이라이트만 보이게 하기
+    }, function() {
+      // 마우스가 벗어날 때 모든 하이라이트 이미지를 숨기기
+      $(".overlay-layer").not(".overlay-layer-99").hide();  // map_layer_99는 숨기지 않음
+    });
+  </script>
+  
+</body>
+</html>
